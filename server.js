@@ -124,76 +124,71 @@ app.delete('/todos/:id', function(req, res) {
 			id: todoID
 		}
 	}).then(function(rowsDeleted) {
-		if (rowsDeleted === 0) {
-			res.status(404).json({
-				error: 'no todo with id'
-			});
-		} else {
-			res.status(204).send();
-		}
-	},
-	function() {
-		res.status(500).send();
-	});
+			if (rowsDeleted === 0) {
+				res.status(404).json({
+					error: 'no todo with id'
+				});
+			} else {
+				res.status(204).send();
+			}
+		},
+		function() {
+			res.status(500).send();
+		});
 
 
 
-// var matchedID = _.findWhere(todos, {
-// 	id: todoID
-// });
-
-// todos.forEach(function (todo){
-// 	if(todoID === todo.id){
-// 		matchedID = todo;
-// 	}
-// });
-
-// if (matchedID) {
-// 	res.json(matchedID);
-// 	todos = _.without(todos, matchedID);
-// } else {
-// 	res.status(404).send();
-// }
-
-});
-
-
-app.put('/todos/:id', function(req, res) {
-	var todoID = parseInt(req.params.id, 10);
-	var matchedID = _.findWhere(todos, {
-		id: todoID
-	});
-	var body = _.pick(req.body, 'description', 'completed');
-	var vaildAttributes = {};
-
-	if (!matchedID) {
-		return res.status(404).send();
-	}
-
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		vaildAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		return res.status(404).send();
-	} else {
-		return res.status(404).send();
-	}
-
-	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-		vaildAttributes.description = body.description;
-	} else if (body.hasOwnProperty('description')) {
-		return res.status(404).send();
-	}
-
-
+	// var matchedID = _.findWhere(todos, {
+	// 	id: todoID
+	// });
 
 	// todos.forEach(function (todo){
 	// 	if(todoID === todo.id){
 	// 		matchedID = todo;
 	// 	}
 	// });
-	_.extend(matchedID, vaildAttributes);
 
-	res.json(matchedID);
+	// if (matchedID) {
+	// 	res.json(matchedID);
+	// 	todos = _.without(todos, matchedID);
+	// } else {
+	// 	res.status(404).send();
+	// }
+
+});
+
+
+app.put('/todos/:id', function(req, res) {
+	var todoID = parseInt(req.params.id, 10);
+	var body = _.pick(req.body, 'description', 'completed');
+	var attributes = {};
+
+
+
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
+	}
+
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description;
+	}
+
+	db.todo.findById(todoID).then(function(todo) {
+		if (todo) {
+			todo.update(attributes).then(function(todo) {
+				res.json(todo.toJSON());
+
+			}, function(e) {
+				res.status(400).json(e);
+			});
+		} else {
+			res.status(404).send();
+		}
+
+	}, function() {
+		res.status(500).send();
+	});
+
 
 });
 
